@@ -1,24 +1,27 @@
-import React from 'react';
-import logo from './logo.svg';
 import './App.css';
-
+import axios  from "axios"
+import { useEffect } from 'react';
+import { CryptoInfo } from './assets/types/backend.type';
 function App() {
+  const axiosInstance = axios.create({
+    baseURL:process.env.REACT_APP_BACKEND_URL,
+    timeout:3000,
+  })
+  async function handleGetTickers (){
+    try {
+      const result = await axiosInstance.get<CryptoInfo[]>(`/crypto-ticker?tokens=BTC,ETH&tokens=XRP`)
+      console.log("result", result.data)
+    } catch (error) {
+      console.log("error", error)
+    }
+  }
+  useEffect(() => {
+    handleGetTickers()
+  }, [])
+  
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      app
     </div>
   );
 }
