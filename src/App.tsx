@@ -27,4 +27,4 @@ function App() {
 	);
 }
 
-export default WithCryptoTickerContext(App);
+export default WithCryptoTickerContext(App,{logLevel:LogLevel.LOG});

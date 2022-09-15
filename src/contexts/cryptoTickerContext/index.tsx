@@ -54,7 +54,9 @@ export const WithCryptoTickerContext = (
                 return socketManager
             }
             const _socketManager = new Manager(
-				process.env.REACT_APP_BACKEND_URL
+				process.env.REACT_APP_BACKEND_URL,{
+					transports:['websocket','polling']
+				}
 			);
 			_socketManager.on("open", () => {
 				logLevel <= LogLevel.LOG && console.log("Manager connect");
