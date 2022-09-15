@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import "./App.css";
 import CryptoTicker from "./components/cryptoTicker";
-import { useCryptoTickerContext, WithCryptoTickerContext } from "./contexts/cryptoTickerContext";
+import { LogLevel, useCryptoTickerContext, WithCryptoTickerContext } from "./contexts/cryptoTickerContext";
 
 function App() {
 	const {cryptoInfos, sync, isSyncing} = useCryptoTickerContext()
