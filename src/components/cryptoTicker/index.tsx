@@ -21,7 +21,7 @@ function numberStringCheck(numStr?:string){
     return defaultRes
 }
 function CryptoTicker(props: CryptoTickerProps) {
-	const { cryptoInfo, interval = TimeInterval.Day } = props;
+	const { cryptoInfo, interval = TimeInterval.Day, styles } = props;
 	const intervalData = cryptoInfo[interval];
     // if(intervalData){
     //     intervalData.price_change = "500"
@@ -41,6 +41,7 @@ function CryptoTicker(props: CryptoTickerProps) {
 				flexDirection: "column",
 				justifyContent: "space-between",
 				alignItems: "flex-start",
+				...styles
 			}}
 		>
 			{/* name */}
