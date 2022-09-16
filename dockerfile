@@ -1,67 +1,32 @@
-###################
-# BUILD FOR LOCAL DEVELOPMENT
-###################
+# => Build container
+FROM node:alpine as builder
+WORKDIR /app
+COPY package.json .
+COPY yarn.lock .
+RUN yarn
+COPY . .
+RUN yarn build
 
-FROM node:18-alpine As development
+# => Run container
+FROM nginx:1.15.2-alpine
 
-# Create app directory
-WORKDIR /usr/src/app
+# Nginx config
+RUN rm -rf /etc/nginx/conf.d
+COPY conf /etc/nginx
 
-# Copy application dependency manifests to the container image.
-# A wildcard is used to ensure copying both package.json AND package-lock.json (when available).
-# Copying this first prevents re-running npm install on every code change.
-COPY --chown=node:node package*.json yarn.lock ./
+# Static build
+COPY --from=builder /app/build /usr/share/nginx/html/
 
-# Install app dependencies using the `npm ci` command instead of `npm install`
-RUN yarn install --immutable --immutable-cache
+# Default port exposure
+EXPOSE 80
 
-# Bundle app source
-COPY --chown=node:node . .
+# Copy .env file and shell script to container
+WORKDIR /usr/share/nginx/html
+COPY ./env.sh .
+COPY .env .
 
-# Use the node user from the image (instead of the root user)
-USER node
+# Make our shell script executable
+RUN chmod +x env.sh
 
-###################
-# BUILD FOR PRODUCTION
-###################
-
-FROM node:18-alpine As build
-
-WORKDIR /usr/src/app
-
-COPY --chown=node:node package*.json yarn.lock ./
-
-# In order to run `npm run build` we need access to the Nest CLI which is a dev dependency. In the previous development stage we ran `npm ci` which installed all dependencies, so we can copy over the node_modules directory from the development image
-COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
-
-COPY --chown=node:node . .
-
-# Run the build command which creates the production bundle
-RUN yarn run build
-
-# Set NODE_ENV environment variable
-ENV NODE_ENV production
-
-# Running `npm ci` removes the existing node_modules directory and passing in --only=production ensures that only the production dependencies are installed. This ensures that the node_modules directory is as optimized as possible
-# RUN npm ci --only=production && npm cache clean --force
-RUN yarn install --production=true --immutable --immutable-cache --check-cache
-
-USER node
-
-###################
-# PRODUCTION
-###################
-
-FROM node:18-alpine As production
-
-# Copy the bundled code from the build stage to the production image
-COPY --chown=node:node --from=build /usr/src/app/build ./build
-
-# Uses port which is used by the actual application
-EXPOSE 3000
-
-# Install `serve` to run the application.
-RUN yarn global add serve
-
-# Start the server using the production build
-CMD serve -s build
+# Start Nginx server
+CMD ["/bin/sh", "-c", "/usr/share/nginx/html/env.sh && nginx -g \"daemon off;\""]
